@@ -1,7 +1,7 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs-extra";
 
-// Define a function to sanitize filenames
 function sanitizeFileName(fileName: string): string {
   // Replace spaces with underscores
   let sanitizedFileName = fileName.replace(/\s+/g, "_");
@@ -12,20 +12,28 @@ function sanitizeFileName(fileName: string): string {
   return sanitizedFileName;
 }
 
-// Define storage for uploaded files
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/movie-provider"); // Specify the directory where files will be stored
+  destination: async function (req, file, cb) {
+    if (req.baseUrl == "/api/movie-provider") {
+
+      const dir = "./public/images/icons/";
+      await fs.ensureDir(dir);
+      return cb(null, dir);
+    }
+
+    const dir = "./public/images/";
+    await fs.ensureDir(dir);
+    return cb(null, dir);
   },
+
   filename: function (req, file, cb) {
-    // Sanitize the original filename
     const sanitizedFileName = sanitizeFileName(file.originalname);
-    cb(null, Date.now() + "-" + sanitizedFileName); // Specify the sanitized filename
+    cb(null, Date.now() + "-" + sanitizedFileName);
   },
 });
 
 const fileFilter = function (req: any, file: any, cb: any) {
-  const filetypes = /jpeg|jpg|png/;
+  const filetypes = /jpeg|jpg|png|webp/;
   const mimetype = filetypes.test(file.mimetype);
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 

@@ -4,6 +4,7 @@ import connectDB from "./db";
 import cookieParser from "cookie-parser";
 import path from "path";
 
+import adminRouter from "./routes/admin.route";
 import movieRouter from "./routes/movie.route";
 import genereRouter from "./routes/genere.route";
 import MovieProviserRouter from "./routes/movieProvider.router";
@@ -41,7 +42,6 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 app.set("views", path.resolve("src/view"));
 app.use(express.static("public"));
-app.use(express.static(path.join(__dirname, "uploads")));
 
 // Define a route handler for the root path
 app.get("/", (req: Request, res: Response) => {
@@ -49,6 +49,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 //api routes
+app.use("/api/admin", adminRouter);
 app.use("/api/movies", movieRouter);
 app.use("/api/generes", genereRouter);
 app.use("/api/movie-provider", MovieProviserRouter);

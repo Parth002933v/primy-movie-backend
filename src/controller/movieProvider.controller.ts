@@ -3,14 +3,25 @@ import { asyncErrorHandler } from "../utils/asyncErrorHandler";
 import { SendResponse } from "../utils/ApiResponse";
 import MovieProviderModel from "../model/movieProvider";
 import CustomError from "../utils/ErrorObject";
+import MovieModel from "../model/movie_model";
 
 export const handleGetMovieProvider = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const movieProviders = await MovieModel.find();
+
+    if (movieProviders.length == 0) {
+      throw new CustomError({
+        message: "There Is No Movie Provider awailable",
+        statusCode: 404,
+      });
+    }
+
     return SendResponse({
       res: res,
-      length: 0,
+      length: movieProviders.length,
       message: "Data fetched successfully!",
       statusCode: 200,
+      data: movieProviders,
     });
   }
 );
@@ -36,11 +47,7 @@ export const handleCreateMovieProvider = asyncErrorHandler(
       });
     }
 
-    const filename = req.file.path;
-
-    const imageURL = `${req.protocol}://${req.get("host")}/movie-provider/${
-      req.file.filename
-    }`;
+    const imageURL = `/movie-provider/${req.file.filename}`;
 
     console.log(imageURL);
 
@@ -60,7 +67,7 @@ export const handleCreateMovieProvider = asyncErrorHandler(
       res: res,
       message: " data uploaded successfully!",
       statusCode: 200,
-      data: imageURL,
+      data: newMovieProvider,
     });
   }
 );

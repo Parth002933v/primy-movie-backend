@@ -4,12 +4,13 @@ import {
   handleGetMovieProvider,
 } from "../controller/movieProvider.controller";
 import { upload } from "../utils/upload";
+import { verifyJWT } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
 router
   .route("/")
   .get(handleGetMovieProvider)
-  .post(upload.single("providerImage"), handleCreateMovieProvider);
+  .post(verifyJWT, upload.single("providerImage"), handleCreateMovieProvider);
 
 export default router;
