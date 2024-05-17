@@ -47,9 +47,9 @@ export const handleCreateMovieProvider = asyncErrorHandler(
       });
     }
 
-    const imageURL = `/movie-provider/${req.file.filename}`;
-
-    console.log(imageURL);
+    const imageURL = `${req.file.destination.replace("./public", "")}${
+      req.file.filename
+    }`;
 
     const newMovieProvider = await MovieProviderModel.create({
       providerName: providerName,
