@@ -1,0 +1,85 @@
+import express, { Express, NextFunction, Request, Response } from "express";
+import dotenv from "dotenv";
+import connectDB from "./db";
+import cookieParser from "cookie-parser";
+import path from "path";
+
+import movieRouter from "./routes/movie.route";
+import genereRouter from "./routes/genere.route";
+import MovieProviserRouter from "./routes/movieProvider.router";
+
+import customError from "./utils/ErrorObject";
+import { globalErrorHandler } from "./middleware/errorHandler.middleware";
+
+dotenv.config({ path: ".env" });
+
+process.on("uncaughtException", (err: Error) => {
+  console.log(err.message);
+  console.log("unhandled rejection is occured! shutting down...");
+
+  server.close();
+});
+
+//connectDB
+connectDB()
+  .then(() => {
+    console.log("MongoDB Connected!");
+  })
+  .catch((e: Error) => {
+    console.error(`MongoDB Connection Error : ${e.message} `);
+  });
+
+// Create Express app
+const app: Express = express();
+
+//middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// view engine
+app.set("view engine", "ejs");
+app.set("views", path.resolve("src/view"));
+app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "uploads")));
+
+// Define a route handler for the root path
+app.get("/", (req: Request, res: Response) => {
+  res.end("server is running");
+});
+
+//api routes
+app.use("/api/movies", movieRouter);
+app.use("/api/generes", genereRouter);
+app.use("/api/movie-provider", MovieProviserRouter);
+
+// for incorrect route
+app.use("*", (req, res, next) => {
+  const error = new customError({
+    message: `can't find ${req.originalUrl} on the server`,
+    statusCode: 404,
+  });
+
+  next(error);
+});
+
+// global error handler
+app.use(globalErrorHandler);
+
+// Start the server
+const PORT = process.env.PORT || 4000;
+
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`http://localhost:${PORT}/`);
+});
+
+// if unhandled exception in occcure the app will shutdown
+process.on("unhandledRejection", (err: Error) => {
+  console.log(err.message);
+  console.log("unhandled rejection is occured! shutting down...");
+
+  server.close(() => {
+    process.exit(1);
+  });
+});
