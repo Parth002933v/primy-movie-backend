@@ -6,7 +6,7 @@ import { ICategory } from "./category_model";
 import { IAgeRating } from "./ageRating_model";
 import { IMovieProvider } from "./movieProvider";
 
-interface downloadLink {
+export interface downloadLink {
   text: string;
   link: string;
 }
@@ -33,10 +33,14 @@ export interface IMovie extends Document {
 }
 
 const movieSchema = new Schema<IMovie>({
-  name: { type: String, required: [true, "You have to provide movie name"] },
+  name: {
+    type: String,
+    required: [true, "You have to provide movie name"],
+    minlength: [1, "Movie name must be at least 1 character long."],
+  },
   content: {
     type: String,
-    required: [true, "please provide content or atleast download link"],
+    required: [true, "please provide content or at least download link"],
   },
   posterImage: {
     type: String,
@@ -49,17 +53,33 @@ const movieSchema = new Schema<IMovie>({
       "https://static.vecteezy.com/system/resources/previews/005/337/799/original/icon-image-not-found-free-vector.jpg",
   },
   screenShorts: [{ type: String }],
-  downloadLink: [{ text: String, link: String }],
-  releaseYear: { type: Number, default: new Date().getFullYear() },
-  genre: [{ type: Schema.Types.ObjectId, ref: "genres" }],
-  languages: [{ type: Schema.Types.ObjectId, ref: "languages" }],
+  downloadLink: [
+    {
+      text: { type: String, required: true },
+      link: { type: String, required: true },
+    },
+  ],
+  releaseYear: {
+    type: Number,
+    required: [true, "Please provide release year"],
+    min: [1800, "Release year must be after 1800"],
+    max: [new Date().getFullYear(), "Release year cannot be in the future"],
+  },
+  genre: [{ type: Schema.Types.ObjectId, ref: "genres", required: true }],
+  languages: [
+    { type: Schema.Types.ObjectId, ref: "languages", required: true },
+  ],
   isDualAudio: { type: Boolean, default: false },
   videoQualitys: [{ type: Schema.Types.ObjectId, ref: "videoQualitys" }],
   Seasons: [{ type: Schema.Types.ObjectId, ref: "movies" }],
   isSeries: { type: Boolean, default: false },
-  category: { type: Schema.Types.ObjectId, ref: "categorys" },
-  ageRating: { type: Schema.Types.ObjectId, ref: "ageRatings" },
-  movieProvider: { type: Schema.Types.ObjectId, ref: "movieProviders" },
+  category: { type: Schema.Types.ObjectId, ref: "categorys", required: true },
+  ageRating: { type: Schema.Types.ObjectId, ref: "ageRatings", required: true },
+  movieProvider: {
+    type: Schema.Types.ObjectId,
+    ref: "movieProviders",
+    required: true,
+  },
   totalDownloads: { type: Number, default: 0 },
   tags: [{ type: String }],
 });

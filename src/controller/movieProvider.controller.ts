@@ -7,7 +7,7 @@ import MovieModel from "../model/movie_model";
 
 export const handleGetMovieProvider = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const movieProviders = await MovieModel.find();
+    const movieProviders = await MovieProviderModel.find();
 
     if (movieProviders.length == 0) {
       throw new CustomError({
@@ -31,7 +31,7 @@ interface handleCreateMovieProviderParams {
 }
 export const handleCreateMovieProvider = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { providerName } = req.body;
+    const { providerName }: handleCreateMovieProviderParams = req.body;
 
     if (!providerName) {
       throw new CustomError({

@@ -22,11 +22,12 @@ export default class CustomError extends Error {
 // Define a MongoDBError interface
 export interface MongoDBError extends Error {
   code: number;
+  value: string;
   keyPattern?: Record<string, any>;
   keyValue?: Record<string, any>;
 }
 
 // Function to check if an error is a MongoDB error
 export function isMongoDBError(error: any): error is MongoDBError {
-  return typeof error.code === "number";
+  return typeof error.code === "number" || error.name === "CastError";
 }

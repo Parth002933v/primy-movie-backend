@@ -7,6 +7,11 @@ import path from "path";
 import adminRouter from "./routes/admin.route";
 import movieRouter from "./routes/movie.route";
 import genereRouter from "./routes/genere.route";
+import ageRatingRouter from "./routes/ageRating.route";
+import languageRouter from "./routes/language.route";
+import videoQualityRouter from "./routes/videoQualitys.route";
+import categoryRouter from "./routes/category.route";
+
 import MovieProviserRouter from "./routes/movieProvider.router";
 
 import customError from "./utils/ErrorObject";
@@ -52,6 +57,11 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/admin", adminRouter);
 app.use("/api/movies", movieRouter);
 app.use("/api/generes", genereRouter);
+app.use("/api/age-rating", ageRatingRouter);
+app.use("/api/language", languageRouter);
+app.use("/api/video-quality", videoQualityRouter);
+app.use("/api/category", categoryRouter);
+
 app.use("/api/movie-provider", MovieProviserRouter);
 
 // for incorrect route

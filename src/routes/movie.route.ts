@@ -1,11 +1,12 @@
 import express from "express";
+import {
+  handleCerateMovie,
+  handleGetMovies,
+  validateMovie,
+} from "../controller/movies.controller";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.status(200).json({
-    message: "all the movies",
-  });
-});
+router.route("/").get(handleGetMovies).post(validateMovie, handleCerateMovie);
 
 export default router;

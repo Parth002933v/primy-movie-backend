@@ -36,6 +36,13 @@ const duplicateKeyErrorHandler = (error: CustomError & MongoDBError) => {
   });
 };
 
+const typeCastErrorHandler = (error: CustomError & MongoDBError) => {
+  return new CustomError({
+    message: `the Id of the ${error.value} is invalid`,
+    statusCode: 400,
+  });
+};
+
 export const globalErrorHandler = (
   error: CustomError,
   _req: Request,
@@ -48,8 +55,13 @@ export const globalErrorHandler = (
   if (process.env.NODE_ENV == "development") {
     devError({ res: res, error: error });
   } else if (process.env.NODE_ENV == "production") {
+    console.log(error.name);
+
     if (isMongoDBError(error) && error.code === 11000) {
       error = duplicateKeyErrorHandler(error);
+    }
+    if (isMongoDBError(error) && error.name === "CastError") {
+      error = typeCastErrorHandler(error);
     }
     prodError({ res: res, error: error });
   }
