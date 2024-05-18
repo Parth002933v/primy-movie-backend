@@ -13,15 +13,33 @@ import VideoQualityModel from "../model/videoQuality_model";
 
 export const handleGetMovies = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const movies = await MovieModel.find()
+      .populate("genre")
+      .populate("languages")
+      .populate("videoQualitys")
+      .populate("category")
+      .populate("ageRating")
+      .populate("movieProvider")
+      .populate("Seasons");
+
+    if (movies.length == 0) {
+      throw new CustomError({
+        message: "There is no movie awailable",
+        statusCode: 404,
+      });
+    }
+
     return SendResponse({
       res: res,
+      length: movies.length,
       message: "got movies",
       statusCode: 200,
+      data: movies,
     });
   }
 );
 
-export const validateMovie = [
+export const validateMovieModdelware = [
   body("name")
     .notEmpty()
     .withMessage("You have to provide movie name")
@@ -45,7 +63,6 @@ export const validateMovie = [
   body("ageRating").notEmpty().withMessage("Age rating is required"),
   body("movieProvider").notEmpty().withMessage("Movie provider is required"),
 ];
-
 export const handleCerateMovie = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);

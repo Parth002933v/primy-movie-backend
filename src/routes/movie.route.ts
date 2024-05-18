@@ -2,11 +2,14 @@ import express from "express";
 import {
   handleCerateMovie,
   handleGetMovies,
-  validateMovie,
+  validateMovieModdelware,
 } from "../controller/movies.controller";
 
 const router = express.Router();
 
-router.route("/").get(handleGetMovies).post(validateMovie, handleCerateMovie);
+router
+  .route("/")
+  .get(handleGetMovies)
+  .post(validateMovieModdelware, handleCerateMovie);
 
 export default router;
