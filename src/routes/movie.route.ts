@@ -11,6 +11,6 @@ const router = express.Router();
 router
   .route("/")
   .get(handleGetMovies)
-  .post( validateMovieModdelware, handleCerateMovie);
+  .post(verifyJWT, validateMovieModdelware, handleCerateMovie);
 
 export default router;
