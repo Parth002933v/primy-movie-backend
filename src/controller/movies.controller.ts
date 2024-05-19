@@ -16,7 +16,6 @@ export const handleGetMovies = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const movie = new ApiFeatures(MovieModel.find(), req.query);
 
-    const jabd = MovieModel;
     // Apply filters, sorting, pagination, etc.
     const filteredQuery = movie.filter().sort().paginate().limitFields();
 
@@ -45,11 +44,96 @@ export const handleGetMovies = asyncErrorHandler(
     return SendResponse({
       res: res,
 
-      TotalPages : totalPages,
+      TotalPages: totalPages,
       length: movies.length,
       message: "got movies",
       statusCode: 200,
       data: movies,
+    });
+  }
+);
+
+export const handleGetLiteMovies = asyncErrorHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    req.query.fields = "name,posterImage";
+
+    const movie = new ApiFeatures(MovieModel.find(), req.query);
+
+    // Apply filters, sorting, pagination, etc.
+    const filteredQuery = movie.filter().sort().paginate().limitFields();
+
+    const populatedMovie = filteredQuery;
+    //   .populate("genre")
+    //   .populate("languages")
+    //   .populate("videoQualitys")
+    //   .populate("category")
+    //   .populate("ageRating")
+    //   .populate("movieProvider")
+    //   .populate("Seasons");
+
+    const movies = (await populatedMovie.query) as typeof MovieModel;
+
+    const totalMoviesCount = await MovieModel.countDocuments();
+
+    const totalPages = Math.ceil(totalMoviesCount / 20);
+
+    if (movies.length == 0) {
+      throw new CustomError({
+        message: "There is no movie awailable",
+        statusCode: 404,
+      });
+    }
+
+    return SendResponse({
+      res: res,
+
+      TotalPages: totalPages,
+      length: movies.length,
+      message: "got movies",
+      statusCode: 200,
+      data: movies,
+    });
+  }
+);
+
+interface MovieParams {
+  movieID: string;
+}
+export const handleGetMovieByID = asyncErrorHandler(
+  async (req: Request, res: Response) => {
+    const { movieID } = req.params;
+
+    const movieOBJ = new ApiFeatures(MovieModel.findById(movieID), req.query);
+
+    req.query.fields =
+      "name,content,posterImage,bannerImage,screenShorts,downloadLink,releaseYear,genre,languages,isDualAudio,Seasons,isSeries,category,ageRating,movieProvider";
+
+    const movie = await movieOBJ
+      .limitFields()
+      .populate("genre")
+      .populate("languages")
+      .populate("videoQualitys")
+      .populate("category")
+      .populate("ageRating")
+      .populate("movieProvider")
+      .populate("Seasons").query;
+
+    const Movie = await MovieModel.findById(movieID);
+
+    if (!movie) {
+      throw new CustomError({
+        message: `There is not Movie by this id ${movieID}`,
+        statusCode: 404,
+      });
+    }
+
+    console.log(movieID);
+
+    return SendResponse({
+      res: res,
+      statusCode: 200,
+      message: "Movie fetched Successful!",
+      data: movie,
     });
   }
 );

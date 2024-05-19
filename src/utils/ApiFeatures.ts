@@ -34,6 +34,7 @@ class ApiFeatures {
   limitFields() {
     if (this.queryString.fields) {
       const fields = this.queryString.fields.split(",").join(" ");
+
       this.query = this.query.select(fields);
     } else {
       this.query = this.query.select("-__v"); // Exclude '__v' field by default
@@ -51,7 +52,7 @@ class ApiFeatures {
   }
 
   populate(value: string) {
-    this.query.populate(value);
+    this.query.populate({ path: value, select: "-__v" });
     return this;
   }
 }
