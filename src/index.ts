@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./db";
 import cookieParser from "cookie-parser";
 import path from "path";
+import cors  from "cors"
 
 import adminRouter from "./routes/admin.route";
 import movieRouter from "./routes/movie.route";
@@ -42,6 +43,8 @@ const app: Express = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(cors());
+
 
 // view engine
 app.set("view engine", "ejs");

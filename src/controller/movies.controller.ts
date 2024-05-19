@@ -2,7 +2,7 @@ import { body, validationResult } from "express-validator";
 import MovieModel, { IMovie } from "../model/movie_model";
 import { SendResponse } from "../utils/ApiResponse";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, query } from "express";
 import CustomError from "../utils/ErrorObject";
 import CategoryModel from "../model/category_model";
 import AgeRatingModel from "../model/ageRating_model";
@@ -10,10 +10,17 @@ import MovieProviderModel from "../model/movieProvider";
 import GenreModel from "../model/genre_model";
 import LanguageModel from "../model/languages_model";
 import VideoQualityModel from "../model/videoQuality_model";
+import ApiFeatures from "../utils/ApiFeatures";
 
 export const handleGetMovies = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const movies = await MovieModel.find()
+    const movie = new ApiFeatures(MovieModel.find(), req.query);
+
+    const jabd = MovieModel;
+    // Apply filters, sorting, pagination, etc.
+    const filteredQuery = movie.filter().sort().paginate().limitFields();
+
+    const populatedMovie = filteredQuery
       .populate("genre")
       .populate("languages")
       .populate("videoQualitys")
@@ -21,6 +28,12 @@ export const handleGetMovies = asyncErrorHandler(
       .populate("ageRating")
       .populate("movieProvider")
       .populate("Seasons");
+
+    const movies = (await populatedMovie.query) as typeof MovieModel;
+
+    const totalMoviesCount = await MovieModel.countDocuments();
+
+    const totalPages = Math.ceil(totalMoviesCount / 20);
 
     if (movies.length == 0) {
       throw new CustomError({
@@ -31,6 +44,8 @@ export const handleGetMovies = asyncErrorHandler(
 
     return SendResponse({
       res: res,
+
+      TotalPages : totalPages,
       length: movies.length,
       message: "got movies",
       statusCode: 200,
@@ -158,8 +173,6 @@ export const handleCerateMovie = asyncErrorHandler(
         statusCode: 400,
       });
     }
-
-    console.log(newMovie);
 
     return SendResponse({
       res: res,
