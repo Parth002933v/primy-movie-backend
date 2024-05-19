@@ -16,7 +16,8 @@ router
   .get(handleGetLiteMovies)
   .post(verifyJWT, validateMovieModdelware, handleCerateMovie);
 
+router.route("/lite").get(handleGetLiteMovies);
+
 router.route("/:movieID").get(handleGetMovieByID);
 
-router.route("/lite").get(handleGetLiteMovies);
 export default router;
