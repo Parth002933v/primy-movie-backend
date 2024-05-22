@@ -17,7 +17,7 @@ export const handleGetMovies = asyncErrorHandler(
     const movie = new ApiFeatures(MovieModel.find(), req.query);
 
     // Apply filters, sorting, pagination, etc.
-    const filteredQuery = movie.filter().sort().paginate().limitFields();
+    const filteredQuery = movie.filter().sort().paginate({}).limitFields();
 
     const populatedMovie = filteredQuery
       .populate("genre")
@@ -55,21 +55,22 @@ export const handleGetMovies = asyncErrorHandler(
 
 export const handleGetLiteMovies = asyncErrorHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    // throw new CustomError({
+    //   message: "There is no movie awailable",
+    //   statusCode: 404,
+    // });
     req.query.fields = "name,posterImage";
 
+    const { pageNumber } = req.params;
     const movie = new ApiFeatures(MovieModel.find(), req.query);
 
-    // Apply filters, sorting, pagination, etc.
-    const filteredQuery = movie.filter().sort().paginate().limitFields();
+    const filteredQuery = movie
+      .filter()
+      .sort()
+      .paginate({ pageNumber: parseInt(pageNumber, 10) })
+      .limitFields();
 
     const populatedMovie = filteredQuery;
-    //   .populate("genre")
-    //   .populate("languages")
-    //   .populate("videoQualitys")
-    //   .populate("category")
-    //   .populate("ageRating")
-    //   .populate("movieProvider")
-    //   .populate("Seasons");
 
     const movies = (await populatedMovie.query) as typeof MovieModel;
 
@@ -96,9 +97,6 @@ export const handleGetLiteMovies = asyncErrorHandler(
   }
 );
 
-interface MovieParams {
-  movieID: string;
-}
 export const handleGetMovieByID = asyncErrorHandler(
   async (req: Request, res: Response) => {
     const { movieID } = req.params;
@@ -139,6 +137,7 @@ export const handleGetMovieByID = asyncErrorHandler(
 );
 
 export const validateMovieModdelware = [
+  body("slugUrl").notEmpty().withMessage("you have to provide slugUrl"),
   body("name")
     .notEmpty()
     .withMessage("You have to provide movie name")
@@ -173,10 +172,10 @@ export const handleCerateMovie = asyncErrorHandler(
         data: errors.array(),
         statusCode: 400,
       });
-      //   return res.status(400).json({ errors: errors.array() });
     }
 
     const {
+      slugUrl,
       category,
       ageRating,
       movieProvider,
@@ -248,6 +247,14 @@ export const handleCerateMovie = asyncErrorHandler(
         statusCode: 400,
       });
     }
+
+    if (!slugUrl.startsWith("/")) {
+      req.body.slugUrl = "/" + slugUrl.toLowerCase();
+    } else {
+      req.body.slugUrl.toLowerCase();
+    }
+
+    console.log(req.body.slugUrl);
 
     const newMovie = await MovieModel.create(req.body);
 

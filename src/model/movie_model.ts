@@ -12,6 +12,7 @@ export interface downloadLink {
 }
 
 export interface IMovie extends Document {
+  slugUrl: string;
   name: string;
   content: string;
   posterImage: string;
@@ -34,8 +35,14 @@ export interface IMovie extends Document {
 
 const movieSchema = new Schema<IMovie>(
   {
+    slugUrl: {
+      type: String,
+      unique: true,
+      required: [true, "Please provide slug url"],
+    },
     name: {
       type: String,
+      unique: true,
       required: [true, "You have to provide movie name"],
       minlength: [1, "Movie name must be at least 1 character long."],
     },

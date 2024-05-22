@@ -3,8 +3,6 @@ import {
   handleCerateMovie,
   handleGetLiteMovies,
   handleGetMovieByID,
-  // handleGetMovieByID,
-  handleGetMovies,
   validateMovieModdelware,
 } from "../controller/movies.controller";
 import { verifyJWT } from "../middleware/auth.middleware";
@@ -15,6 +13,8 @@ router
   .route("/")
   .get(handleGetLiteMovies)
   .post(verifyJWT, validateMovieModdelware, handleCerateMovie);
+
+router.route("/page/:pageNumber").get(handleGetLiteMovies);
 
 router.route("/:movieID").get(handleGetMovieByID);
 

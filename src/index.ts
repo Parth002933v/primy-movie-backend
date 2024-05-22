@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./db";
 import cookieParser from "cookie-parser";
 import path from "path";
-import cors  from "cors"
+import cors from "cors";
 
 import adminRouter from "./routes/admin.route";
 import movieRouter from "./routes/movie.route";
@@ -29,13 +29,7 @@ process.on("uncaughtException", (err: Error) => {
 
 //connectDB
 connectDB()
-  .then(() => {
-    console.log("MongoDB Connected!");
-  })
-  .catch((e: Error) => {
-    console.error(`MongoDB Connection Error : ${e.message} `);
-  });
-
+  
 // Create Express app
 const app: Express = express();
 
@@ -43,8 +37,12 @@ const app: Express = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors());
 
+const corsOptions = {
+  origin: "http://localhost:5000", // Replace with your allowed origin(s)
+  optionsSuccessStatus: 200, // Some legacy browsers (e.g., IE11) choke on 204
+};
+app.use(cors(corsOptions));
 
 // view engine
 app.set("view engine", "ejs");

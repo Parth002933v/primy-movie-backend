@@ -42,8 +42,8 @@ class ApiFeatures {
     return this;
   }
 
-  paginate() {
-    const page = parseInt(this.queryString.page) || 1;
+  paginate({ pageNumber }: { pageNumber?: number }) {
+    const page = pageNumber || 1;
     const limit = 20;
     const skip = (page - 1) * limit;
 
