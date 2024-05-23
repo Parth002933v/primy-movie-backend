@@ -59,7 +59,7 @@ export const handleGetLiteMovies = asyncErrorHandler(
     //   message: "There is no movie awailable",
     //   statusCode: 404,
     // });
-    req.query.fields = "name,posterImage";
+    req.query.fields = "slugUrl,name,posterImage";
 
     const { pageNumber } = req.params;
     const movie = new ApiFeatures(MovieModel.find(), req.query);
@@ -97,14 +97,17 @@ export const handleGetLiteMovies = asyncErrorHandler(
   }
 );
 
-export const handleGetMovieByID = asyncErrorHandler(
+export const handleGetMovieBySlugUrl = asyncErrorHandler(
   async (req: Request, res: Response) => {
-    const { movieID } = req.params;
+    const { slugName } = req.params;
 
-    const movieOBJ = new ApiFeatures(MovieModel.findById(movieID), req.query);
+    const movieOBJ = new ApiFeatures(
+      MovieModel.findOne({ slugUrl: slugName }),
+      req.query
+    );
 
     req.query.fields =
-      "name,content,posterImage,bannerImage,screenShorts,downloadLink,releaseYear,genre,languages,isDualAudio,Seasons,isSeries,category,ageRating,movieProvider";
+      "name,content,slugUrl,posterImage,bannerImage,screenShorts,downloadLink,releaseYear,genre,languages,isDualAudio,Seasons,isSeries,category,ageRating,movieProvider";
 
     const movie = await movieOBJ
       .limitFields()
@@ -116,16 +119,14 @@ export const handleGetMovieByID = asyncErrorHandler(
       .populate("movieProvider")
       .populate("Seasons").query;
 
-    const Movie = await MovieModel.findById(movieID);
+    // const Movie = await MovieModel.findById(movieID);
 
-    if (!movie) {
+    if (!movie || movie.length == 0) {
       throw new CustomError({
-        message: `There is not Movie by this id ${movieID}`,
+        message: `sorry we not able to file your movie`,
         statusCode: 404,
       });
     }
-
-    console.log(movieID);
 
     return SendResponse({
       res: res,
@@ -248,15 +249,131 @@ export const handleCerateMovie = asyncErrorHandler(
       });
     }
 
-    if (!slugUrl.startsWith("/")) {
-      req.body.slugUrl = "/" + slugUrl.toLowerCase();
-    } else {
-      req.body.slugUrl.toLowerCase();
-    }
+    let slugUrlValue = slugUrl.startsWith("/") ? slugUrl.slice(1) : slugUrl;
 
-    console.log(req.body.slugUrl);
+    // Replace all special characters with "-"
+    slugUrlValue = slugUrlValue.replace(/[^a-zA-Z0-9]/g, "-");
+
+    req.body.slugUrl = slugUrlValue;
 
     const newMovie = await MovieModel.create(req.body);
+
+    if (!newMovie) {
+      throw new CustomError({
+        message: "somthing went wrong",
+        statusCode: 400,
+      });
+    }
+
+    return SendResponse({
+      res: res,
+      message: "movie created!",
+      statusCode: 200,
+      data: newMovie,
+    });
+  }
+);
+
+export const handleUpdateMovie = asyncErrorHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const errors = validationResult(req);
+
+    const { MoveiId } = req.params;
+
+    if (!errors.isEmpty()) {
+      return SendResponse({
+        res: res,
+        message: "validation error",
+        data: errors.array(),
+        statusCode: 400,
+      });
+    }
+
+    const {
+      slugUrl,
+      category,
+      ageRating,
+      movieProvider,
+      genre,
+      languages,
+      videoQualitys,
+      Seasons,
+    } = req.body;
+
+    // Validate that referenced documents exist
+    const [
+      categoryExists,
+      ageRatingExists,
+      movieProviderExists,
+      genresExist,
+      languagesExist,
+      videoQualitysExist,
+      seasonsExist,
+    ] = await Promise.all([
+      CategoryModel.exists({ _id: category }),
+      AgeRatingModel.exists({ _id: ageRating }),
+      MovieProviderModel.exists({ _id: movieProvider }),
+      GenreModel.find({ _id: { $in: genre } }).select("_id"),
+      LanguageModel.find({ _id: { $in: languages } }).select("_id"),
+      VideoQualityModel.find({ _id: { $in: videoQualitys } }).select("_id"),
+      MovieModel.find({ _id: { $in: Seasons } }).select("_id"),
+    ]);
+
+    if (!categoryExists) {
+      throw new CustomError({
+        message: "Invalid category ID",
+        statusCode: 400,
+      });
+    }
+    if (!ageRatingExists) {
+      throw new CustomError({
+        message: "Invalid age rating ID",
+        statusCode: 400,
+      });
+    }
+    if (!movieProviderExists) {
+      throw new CustomError({
+        message: "Invalid movie provider ID",
+        statusCode: 400,
+      });
+    }
+    if (genresExist.length !== genre.length) {
+      throw new CustomError({
+        message: "Invalid genre ID(s)",
+        statusCode: 400,
+      });
+    }
+    if (languagesExist.length !== languages.length) {
+      throw new CustomError({
+        message: "Invalid language ID(s)",
+        statusCode: 400,
+      });
+    }
+
+    if (videoQualitysExist.length !== videoQualitys.length) {
+      throw new CustomError({
+        message: "Invalid video quality ID(s)",
+        statusCode: 400,
+      });
+    }
+    if (seasonsExist.length !== Seasons.length) {
+      throw new CustomError({
+        message: "Invalid season ID(s)",
+        statusCode: 400,
+      });
+    }
+
+    let slugUrlValue = slugUrl.startsWith("/") ? slugUrl.slice(1) : slugUrl;
+
+    // Replace all special characters with "-"
+    slugUrlValue = slugUrlValue.replace(/[^a-zA-Z0-9]/g, "-");
+
+    req.body.slugUrl = slugUrlValue;
+
+    const newMovie = await MovieModel.findByIdAndUpdate(MoveiId, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!newMovie) {
       throw new CustomError({

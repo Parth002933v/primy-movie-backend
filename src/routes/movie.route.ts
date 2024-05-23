@@ -2,7 +2,8 @@ import express, { NextFunction, Request, Response } from "express";
 import {
   handleCerateMovie,
   handleGetLiteMovies,
-  handleGetMovieByID,
+  handleGetMovieBySlugUrl,
+  handleUpdateMovie,
   validateMovieModdelware,
 } from "../controller/movies.controller";
 import { verifyJWT } from "../middleware/auth.middleware";
@@ -14,8 +15,12 @@ router
   .get(handleGetLiteMovies)
   .post(verifyJWT, validateMovieModdelware, handleCerateMovie);
 
+router
+  .route("/edit/:MoveiId")
+  .put(verifyJWT, validateMovieModdelware, handleUpdateMovie);
+
 router.route("/page/:pageNumber").get(handleGetLiteMovies);
 
-router.route("/:movieID").get(handleGetMovieByID);
+router.route("/:slugName").get(handleGetMovieBySlugUrl);
 
 export default router;
