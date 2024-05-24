@@ -13,10 +13,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const movie_model_1 = __importDefault(require("./model/movie_model"));
 function connectDB() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`${process.env.MONGODB_URL}/${process.env.MONGODB_DATABSE_NAME}`);
-        return mongoose_1.default.connect(`${process.env.MONGODB_URL}/${process.env.MONGODB_DATABSE_NAME}`);
+        mongoose_1.default
+            .connect(`${process.env.MONGODB_URL}/${process.env.MONGODB_DATABSE_NAME}`)
+            .then(() => {
+            console.log("MongoDB Connected!");
+            movie_model_1.default.init().then(() => {
+                console.log("Indexes ensured");
+            });
+        })
+            .catch((e) => {
+            console.error(`MongoDB Connection Error : ${e.message} `);
+        });
     });
 }
 exports.default = connectDB;

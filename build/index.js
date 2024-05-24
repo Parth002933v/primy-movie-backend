@@ -26,20 +26,18 @@ process.on("uncaughtException", (err) => {
     server.close();
 });
 //connectDB
-(0, db_1.default)()
-    .then(() => {
-    console.log("MongoDB Connected!");
-})
-    .catch((e) => {
-    console.error(`MongoDB Connection Error : ${e.message} `);
-});
+(0, db_1.default)();
 // Create Express app
 const app = (0, express_1.default)();
 //middlewares
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cookie_parser_1.default)());
-app.use((0, cors_1.default)());
+const corsOptions = {
+    origin: "http://localhost:5000", // Replace with your allowed origin(s)
+    optionsSuccessStatus: 200, // Some legacy browsers (e.g., IE11) choke on 204
+};
+app.use((0, cors_1.default)(corsOptions));
 // view engine
 app.set("view engine", "ejs");
 app.set("views", path_1.default.resolve("src/view"));

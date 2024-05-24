@@ -36,15 +36,15 @@ class ApiFeatures {
         }
         return this;
     }
-    paginate() {
-        const page = parseInt(this.queryString.page) || 1;
+    paginate({ pageNumber }) {
+        const page = pageNumber || 1;
         const limit = 20;
         const skip = (page - 1) * limit;
         this.query = this.query.skip(skip).limit(limit);
         return this;
     }
     populate(value) {
-        this.query.populate(value);
+        this.query.populate({ path: value, select: "-__v" });
         return this;
     }
 }

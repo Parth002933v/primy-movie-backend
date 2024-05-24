@@ -23,7 +23,7 @@ const verifyJWT = (0, asyncErrorHandler_1.asyncErrorHandler)((req, res, next) =>
         (req.headers.authorization &&
             req.headers.authorization.replace("Bearer ", ""));
     if (token === undefined) {
-        return res.status(401).json({
+        throw new ErrorObject_1.default({
             statusCode: 401,
             message: "Unauthorized request",
         });

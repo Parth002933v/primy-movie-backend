@@ -2,8 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const movieSchema = new mongoose_1.Schema({
+    slugUrl: {
+        type: String,
+        unique: true,
+        required: [true, "Please provide slug url"],
+    },
     name: {
         type: String,
+        unique: true,
         required: [true, "You have to provide movie name"],
         minlength: [1, "Movie name must be at least 1 character long."],
     },

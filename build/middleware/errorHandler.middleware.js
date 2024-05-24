@@ -37,19 +37,21 @@ const prodError = ({ res, error }) => {
     if (error.isOperational) {
         res.status(error.statusCode).json({
             statusCode: error.statusCode,
-            messgae: error.message,
+            message: error.message,
         });
     }
     else {
         res.status(error.statusCode).json({
             statusCode: 500,
-            messgae: "Something went wrong",
+            message: "Something went wrong",
         });
     }
 };
 const duplicateKeyErrorHandler = (error) => {
+    const value = Object.values(error.keyValue);
+    const key = Object.keys(error.keyValue);
     return new ErrorObject_1.default({
-        message: `There is already a movie with name "${error.keyValue.name}". Please use another name!`,
+        message: `There is already a movie with ${key} : "${value}". Please use another ${key}!`,
         statusCode: 409,
     });
 };
@@ -66,7 +68,6 @@ const globalErrorHandler = (error, _req, res, next) => {
         devError({ res: res, error: error });
     }
     else if (process.env.NODE_ENV == "production") {
-        console.log(error.name);
         if ((0, ErrorObject_1.isMongoDBError)(error) && error.code === 11000) {
             error = duplicateKeyErrorHandler(error);
         }
